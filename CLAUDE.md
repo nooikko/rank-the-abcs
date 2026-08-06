@@ -24,7 +24,7 @@ src/components/ui/  shadcn registry output ← treat as generated, don't edit
 src/lib/site.ts   site name, URL, description — page and metadata both read it
 src/lib/utils.ts  cn() class merger
 .claude/rules/    detailed conventions, loaded automatically
-skills/           vendored agent skills
+.claude/skills/   vendored agent skills
 ```
 
 ## The three rules that matter most
