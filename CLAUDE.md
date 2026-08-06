@@ -24,7 +24,6 @@ src/components/ui/  shadcn registry output ← treat as generated, don't edit
 src/lib/site.ts   site name, URL, description — page and metadata both read it
 src/lib/utils.ts  cn() class merger
 .claude/rules/    detailed conventions, loaded automatically
-.claude/skills/   vendored agent skills
 ```
 
 ## The three rules that matter most
@@ -51,12 +50,6 @@ Full detail lives in `.claude/rules/`: `shadcn-components.md`,
 - Tailwind 4 has no `tailwind.config.js`. Configure in `src/app/globals.css`.
 - `params`, `searchParams`, `cookies()`, and `headers()` are async — await them.
 
-## Available skills
-
-Invoke rather than reinventing: `vercel-react-best-practices` (performance,
-waterfalls, bundle size), `vercel-composition-patterns` (component API design),
-`web-design-guidelines` (accessibility/UX review), `vercel-optimize`,
-`deploy-to-vercel`.
 
 Version-accurate Next.js docs for the installed release are in
 `node_modules/next/dist/docs/`. Prefer them over recalled API details.

@@ -84,9 +84,7 @@ Server-only values must not be imported into a `"use client"` module. Only
 `NEXT_PUBLIC_*` env vars reach the browser. Guard genuinely sensitive modules
 with the `server-only` package.
 
-## Related skills
+## Reference
 
-For deeper performance work — waterfalls, bundle size, memoization — invoke the
-`vercel-react-best-practices` skill. For component API design, use
-`vercel-composition-patterns`. Detailed, version-accurate reference docs for the
+Detailed, version-accurate reference docs for the
 installed Next.js version live in `node_modules/next/dist/docs/`.

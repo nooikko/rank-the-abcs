@@ -98,5 +98,3 @@ than branching on strings. Radii derive from `--radius`; use `rounded-md`,
 
 Animation utilities come from `tw-animate-css`, already imported.
 
-For accessibility and interaction review, invoke the `web-design-guidelines`
-skill.
