@@ -10,5 +10,10 @@ import { SITE_URL } from "@/lib/site";
  * No `priority` and no `changeFrequency`: Google has ignored both for years.
  */
 export default function sitemap(): MetadataRoute.Sitemap {
-  return [{ url: SITE_URL, lastModified: new Date() }];
+  const lastModified = new Date();
+  return [
+    { url: SITE_URL, lastModified },
+    { url: `${SITE_URL}/rankings`, lastModified },
+    { url: `${SITE_URL}/privacy`, lastModified },
+  ];
 }
