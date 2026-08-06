@@ -41,7 +41,7 @@ export default async function Home() {
           Rule on something &rarr;
           <span
             aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-1 h-px origin-left scale-x-0 bg-signal transition-transform duration-[var(--duration-hairline)] ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
+            className="pointer-events-none absolute inset-x-0 bottom-1 h-px origin-left scale-x-0 bg-signal transition-transform duration-(--duration-hairline) ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
           />
         </Link>
       </p>

@@ -89,7 +89,7 @@ export function VoteLoop({
             />
             {/* Reserved whether or not a reveal is showing, so answering does
                 not resize the cells above it. */}
-            <div className="min-h-[10rem] sm:min-h-[10.5rem]">
+            <div className="min-h-40 sm:min-h-42">
               {split && (
                 <>
                   <RevealLedger split={split} chosen={winner} />
@@ -101,7 +101,7 @@ export function VoteLoop({
                     Next ruling &rarr;
                     <span
                       aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 bottom-3 h-px origin-left scale-x-0 bg-signal transition-transform duration-[var(--duration-hairline)] ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
+                      className="pointer-events-none absolute inset-x-0 bottom-3 h-px origin-left scale-x-0 bg-signal transition-transform duration-(--duration-hairline) ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
                     />
                   </button>
                 </>
