@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+# Not ours to be judged on, and noise in a diff.
+pnpm-lock.yaml       linguist-generated -diff
+prisma/migrations/** linguist-generated
+
+# Design records, not shipped code.
+docs/**              linguist-documentation

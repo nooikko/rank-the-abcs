@@ -13,12 +13,10 @@
       "!.next",
       "!dist",
       "!build",
-      "!.claude/skills",
       "!public",
       "!src/components/ui",
       "!src/generated",
-      "!pnpm-lock.yaml",
-      "!skills-lock.json"
+      "!pnpm-lock.yaml"
     ]
   },
   "formatter": {
