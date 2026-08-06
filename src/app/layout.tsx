@@ -2,8 +2,10 @@ import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Newsreader } from "next/font/google";
 import { GitHubCorner } from "@/components/github-corner";
+import { JsonLd } from "@/components/json-ld";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
+import { siteStructuredData } from "@/lib/structured-data";
 import "./globals.css";
 
 // Variable font: no `weight`, so the whole 300–600 range is available to the
@@ -29,18 +31,23 @@ export const metadata: Metadata = {
   // back to the deployment origin, which would aim the canonical at the
   // .vercel.app alias — the exact duplicate the canonical exists to collapse.
   metadataBase: new URL(SITE_URL),
-  title: SITE_NAME,
-  description: SITE_DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    url: "/",
-    siteName: SITE_NAME,
-    locale: "en_US",
+  title: {
+    // `default` covers the two routes that state no title of their own: the
+    // home page, whose title is the site's, and the 404, which cannot export
+    // metadata at all. `template` spares every other page from spelling out
+    // the suffix — they hand over "Privacy" and get "Privacy — Rank the ABCs".
+    default: SITE_NAME,
+    template: `%s — ${SITE_NAME}`,
   },
+  description: SITE_DESCRIPTION,
   twitter: {
     card: "summary_large_image",
   },
+  // No `alternates` or `openGraph` here on purpose. Both are per-page facts,
+  // and `openGraph` in particular is merged shallowly — a layout-level copy
+  // would be silently discarded by any page that declared its own, which is
+  // exactly how every page came to advertise the origin as its og:url. They
+  // are built by `pageMetadata` instead, from a single path per page.
 };
 
 export default function RootLayout({
@@ -62,6 +69,7 @@ export default function RootLayout({
       className={`${newsreader.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
+        <JsonLd data={siteStructuredData} />
         <ThemeProvider>
           <GitHubCorner />
           {children}
