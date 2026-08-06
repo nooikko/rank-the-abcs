@@ -75,9 +75,9 @@ export function VoteLoop({
 
   return (
     <>
-      {/* Takes all the space the page has, so the question sits in the middle
-          of the screen rather than at the top of a column. */}
-      <div className="flex flex-1 flex-col justify-center py-s4">
+      {/* Takes every pixel the page has left over, so the cells inside can
+          stretch into it rather than leaving a void underneath. */}
+      <div className="flex flex-1 flex-col pt-s4">
         {question ? (
           <>
             <QuestionCard
@@ -88,15 +88,15 @@ export function VoteLoop({
               onAnswer={answer}
             />
             {/* Reserved whether or not a reveal is showing, so answering does
-                not shove the question up the screen. */}
-            <div className="min-h-[9.5rem]">
+                not resize the cells above it. */}
+            <div className="min-h-[10rem] sm:min-h-[10.5rem]">
               {split && (
                 <>
                   <RevealLedger split={split} chosen={winner} />
                   <button
                     type="button"
                     onClick={advance}
-                    className="group relative mt-s3 inline-flex min-h-11 items-center font-mono text-meta uppercase tracking-caps"
+                    className="group relative mt-s2 inline-flex min-h-11 items-center font-mono text-meta uppercase tracking-caps"
                   >
                     Next ruling &rarr;
                     <span
@@ -109,10 +109,12 @@ export function VoteLoop({
             </div>
           </>
         ) : (
-          <p className="max-w-lead text-pretty text-lead">
-            You have ruled on every question there is. That is genuinely all of
-            them. Go and look at what you did to the alphabet.
-          </p>
+          <div className="flex flex-1 items-center">
+            <p className="max-w-lead text-pretty text-lead">
+              You have ruled on every question there is. That is genuinely all
+              of them. Go and look at what you did to the alphabet.
+            </p>
+          </div>
         )}
       </div>
 

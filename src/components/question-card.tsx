@@ -15,9 +15,12 @@ export function QuestionCard({
   onAnswer: (value: string) => void;
 }) {
   return (
-    <div>
-      <h1 className="mb-s5 text-balance font-name text-name">{prompt}</h1>
-      <div className="flex border-border border-t">
+    <>
+      <h1 className="mb-s4 text-balance font-name text-name">{prompt}</h1>
+      {/* flex-1 so the two cells eat whatever vertical space is left after the
+          question and the reveal have taken theirs. They are the thing the
+          page exists to make you hit; they should not be a strip. */}
+      <div className="flex min-h-[13rem] flex-1 border-border border-t border-b sm:min-h-[16rem]">
         {options.map((option, index) => (
           <button
             key={option.value}
@@ -28,20 +31,20 @@ export function QuestionCard({
             // outside the cell at an offset. Both are orange and they mean
             // different things, so the separation has to stay.
             className={cn(
-              "flex-1 border-border border-b px-s2 py-s5 text-center font-name text-duel transition-colors",
-              index > 0 && "border-l",
+              "flex flex-1 flex-col items-center justify-center gap-s4 px-s2 py-s4 font-name text-duel transition-colors",
+              index > 0 && "border-border border-l",
               chosen === option.value &&
                 "shadow-[inset_0_0_0_1px_var(--signal)]",
               !disabled && "hover:text-primary",
             )}
           >
-            {option.label}
-            <span className="mt-s3 block font-mono text-micro uppercase tracking-caps text-muted-foreground">
+            <span>{option.label}</span>
+            <span className="font-mono text-micro uppercase tracking-caps text-muted-foreground">
               press {index + 1}
             </span>
           </button>
         ))}
       </div>
-    </div>
+    </>
   );
 }

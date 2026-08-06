@@ -13,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
   return [
     { url: SITE_URL, lastModified },
+    { url: `${SITE_URL}/vote`, lastModified },
     { url: `${SITE_URL}/rankings`, lastModified },
     { url: `${SITE_URL}/privacy`, lastModified },
   ];

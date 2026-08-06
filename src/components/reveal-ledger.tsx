@@ -9,7 +9,7 @@ export function RevealLedger({
   chosen: string | null;
 }) {
   return (
-    <dl className="mt-s4 border-border border-t font-mono text-meta">
+    <dl className="mt-s3 border-border border-t font-mono text-meta">
       {split.map((row) => {
         const mine = row.letter === chosen;
         return (

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { RankingRow } from "@/components/ranking-row";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteShell } from "@/components/site-shell";
+import { TopBar } from "@/components/top-bar";
 import { getRanking } from "@/lib/ranking-cache";
 import { SITE_NAME } from "@/lib/site";
 
@@ -39,7 +39,10 @@ export default async function Rankings() {
   if (ranking.placed.length === 0) {
     return (
       <SiteShell>
-        <h1 className="mb-s3 text-balance font-name text-name">Nothing yet</h1>
+        <TopBar current="rankings" />
+        <h1 className="mt-s5 mb-s3 text-balance font-name text-name">
+          Nothing yet
+        </h1>
         <p className="mb-s5 max-w-lead text-pretty text-lead">
           Not one ruling has been cast, so there is no alphabet to show. Putting
           the old one here dressed up as a result would be a lie.
@@ -57,7 +60,8 @@ export default async function Rankings() {
 
   return (
     <SiteShell wide>
-      <h1 className="mb-s3 text-balance font-name text-name">
+      <TopBar current="rankings" />
+      <h1 className="mt-s5 mb-s3 text-balance font-name text-name">
         The alphabet so far
       </h1>
       <p className="mb-s5 max-w-lead text-pretty text-lead">
@@ -114,27 +118,7 @@ export default async function Rankings() {
             );
           })}
         </dl>
-        <p className="mt-s3 max-w-measure text-pretty text-muted-foreground">
-          The scores above are adjusted for all three. Asking &ldquo;should T
-          come after V&rdquo; and &ldquo;which comes first, V or T&rdquo; gets
-          measurably different answers out of the same people, so the phrasing
-          of every question is recorded and its effect estimated alongside the
-          letters themselves.
-        </p>
       </section>
-
-      <p className="mb-s5">
-        <Link
-          href="/"
-          className="group relative inline-flex min-h-11 items-center font-mono text-meta uppercase tracking-caps"
-        >
-          Rule on something &rarr;
-          <span
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-x-0 bottom-3 h-px origin-left scale-x-0 bg-signal transition-transform duration-[var(--duration-hairline)] ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
-          />
-        </Link>
-      </p>
 
       <SiteFooter current="rankings" />
     </SiteShell>

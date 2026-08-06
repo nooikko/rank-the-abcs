@@ -223,16 +223,27 @@ computable and worth showing.
 
 ## Surfaces
 
-**Vote page** (`/`) — the loop. One question, its answers, the reveal, the next
-question. Carries the progress indicator.
+**Home** (`/`) — sells the idea, not the machinery. The premise, what you will
+be asked to do, and a link into the loop. No mention of the ranking method:
+someone arriving cold needs a reason to care, not a description of a logistic
+regression. Short enough that the call to action is reachable on a phone
+without scrolling.
+
+**Vote page** (`/vote`) — the loop. One question, its answers, the reveal, the
+next question. Carries the progress indicator. Fills the viewport rather than
+sitting in a reading column.
 
 **Rankings page** (`/rankings`) — the current alphabet with its error bars, the
 scoreboard beneath it, and a methodology block reporting the measured bias
-coefficients. Publicly readable without voting.
+coefficients as bare figures. Publicly readable without voting.
 
 **Privacy page** (`/privacy`) — what the cookie is, what it does, that nothing
 is sold or shared, and the forget-me control. Required, since the
 strictly-necessary exemption removes the banner but not the notice.
+
+Every page except home carries a top bar with the wordmark and the link to the
+other half of the site. A GitHub corner is fixed to the top right throughout,
+and the footer links out to the portfolio at `findquinn.com`.
 
 ### Vote screen layout
 

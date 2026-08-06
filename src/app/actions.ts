@@ -42,5 +42,6 @@ export async function forgetMe(): Promise<void> {
   await clearSession();
   invalidateRanking();
   revalidatePath("/");
+  revalidatePath("/vote");
   revalidatePath("/privacy");
 }
