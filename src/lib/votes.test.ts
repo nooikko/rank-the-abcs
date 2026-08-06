@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { prisma } from "./db";
 import {
   allObservations,
@@ -17,6 +17,13 @@ async function freshSession(): Promise<string> {
 
 describe("vote repository", () => {
   beforeEach(async () => {
+    await prisma.vote.deleteMany();
+    await prisma.session.deleteMany();
+  });
+
+  // Cleaning up only before each test leaves the last test's rows behind, and
+  // this suite points at the same database the site reads.
+  afterAll(async () => {
     await prisma.vote.deleteMany();
     await prisma.session.deleteMany();
   });
