@@ -13,11 +13,10 @@ import { selectQuestion } from "./select-question";
 import { newPendingSessionId } from "./session";
 import {
   answeredCellKeys,
-  cellVoteCounts,
   pairSplit,
-  pairVoteCounts,
   recentVoteCount,
   recordVote,
+  voteCounts,
 } from "./votes";
 
 export type ServedQuestion = {
@@ -56,13 +55,12 @@ const RATE_LIMIT = 60;
 export async function serveQuestion(
   sessionId: string,
 ): Promise<ServedQuestion | null> {
-  const [pairCounts, cellCounts, answered] = await Promise.all([
-    pairVoteCounts(),
-    cellVoteCounts(),
+  const [counts, answered] = await Promise.all([
+    voteCounts(),
     answeredCellKeys(sessionId),
   ]);
 
-  const selected = selectQuestion(pairCounts, cellCounts, answered);
+  const selected = selectQuestion(counts.pairs, counts.cells, answered);
   if (!selected) return null;
 
   const second = otherLetter(selected.pairKey, selected.firstShown);
@@ -136,27 +134,36 @@ export async function applyVote(
     return rejected(sessionId);
   }
 
-  // The row is created here rather than at render time, so a visitor who never
-  // votes leaves no trace at all.
-  await persistSession(sessionId);
-
-  const stored = await recordVote({
+  const vote = {
     sessionId,
     pairKey,
     template,
     firstShown,
     answer,
     winner,
-  });
-  if (!stored) return rejected(sessionId);
+  };
+
+  // A visitor with no cookie is voting for the first time, so the row is known
+  // not to exist and is created up front. Everyone else goes straight to the
+  // insert, and only falls back if the database says the session is missing —
+  // which means the row was deleted underneath them.
+  if (cookieSessionId === null) await persistSession(sessionId);
+
+  let stored = await recordVote(vote);
+  if (stored === "no-session") {
+    await persistSession(sessionId);
+    stored = await recordVote(vote);
+  }
+  if (stored !== "stored") return rejected(sessionId);
 
   invalidateRanking();
 
-  return {
-    accepted: true,
-    split: await splitFor(pairKey),
-    chosen: winner,
-    next: await serveQuestion(sessionId),
-    sessionId,
-  };
+  // The split and the next question are independent; awaiting them in sequence
+  // cost a whole round trip for nothing.
+  const [split, next] = await Promise.all([
+    splitFor(pairKey),
+    serveQuestion(sessionId),
+  ]);
+
+  return { accepted: true, split, chosen: winner, next, sessionId };
 }
