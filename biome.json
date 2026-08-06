@@ -18,6 +18,7 @@
       "!skills",
       "!public",
       "!src/components/ui",
+      "!src/generated",
       "!pnpm-lock.yaml",
       "!skills-lock.json"
     ]

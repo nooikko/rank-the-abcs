@@ -1,0 +1,48 @@
+// Prisma 7: the `prisma-client` generator replaces `prisma-client-js`, writes
+// to an explicit output path, and requires a driver adapter at runtime — see
+// src/lib/db.ts. `importFileExtension = ""` keeps the generated imports
+// extensionless so Next's bundler resolves them.
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  importFileExtension = ""
+}
+
+// Prisma 7 no longer accepts `url` here. Migrate reads it from
+// prisma.config.ts; the runtime client gets it through the driver adapter.
+datasource db {
+  provider = "postgresql"
+}
+
+enum Template {
+  WHICH_FIRST
+  SHOULD_BEFORE
+  SHOULD_AFTER
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  votes     Vote[]
+}
+
+model Vote {
+  id String @id @default(cuid())
+
+  // Nullable so "forget me" can sever the link without destroying the vote.
+  // Postgres treats NULLs as distinct in a unique index, so detached votes do
+  // not collide with each other.
+  session   Session? @relation(fields: [sessionId], references: [id])
+  sessionId String?
+
+  pairKey    String
+  firstShown String
+  template   Template
+  answer     String
+  winner     String
+  createdAt  DateTime @default(now())
+
+  @@unique([sessionId, pairKey, template, firstShown])
+  @@index([pairKey])
+  @@index([sessionId, createdAt])
+}

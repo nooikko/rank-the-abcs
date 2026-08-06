@@ -43,3 +43,6 @@ next-env.d.ts
 # agent tooling — per-machine permission grants, not shared config
 .claude/settings.local.json
 .superpowers/
+
+# prisma client — generated from prisma/schema.prisma on install
+/src/generated
