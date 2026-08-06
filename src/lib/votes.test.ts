@@ -3,11 +3,10 @@ import { prisma } from "./db";
 import {
   allObservations,
   answeredCellKeys,
-  cellVoteCounts,
   detachSessionVotes,
   pairSplit,
-  pairVoteCounts,
   recordVote,
+  voteCounts,
 } from "./votes";
 
 async function freshSession(): Promise<string> {
@@ -39,7 +38,7 @@ describe("vote repository", () => {
       winner: "Q",
     });
 
-    const counts = await pairVoteCounts();
+    const counts = (await voteCounts()).pairs;
     expect(counts.get("E:Q")).toBe(1);
   });
 
@@ -53,9 +52,9 @@ describe("vote repository", () => {
       answer: "Q",
       winner: "Q" as const,
     };
-    expect(await recordVote(input)).toBe(true);
-    expect(await recordVote(input)).toBe(false);
-    expect((await pairVoteCounts()).get("E:Q")).toBe(1);
+    expect(await recordVote(input)).toBe("stored");
+    expect(await recordVote(input)).toBe("duplicate");
+    expect((await voteCounts()).pairs.get("E:Q")).toBe(1);
   });
 
   it("allows the same pair in a different phrasing", async () => {
@@ -76,8 +75,8 @@ describe("vote repository", () => {
       answer: "YES",
       winner: "Q",
     });
-    expect((await pairVoteCounts()).get("E:Q")).toBe(2);
-    expect((await cellVoteCounts()).get("E:Q|WHICH_FIRST|Q")).toBe(1);
+    expect((await voteCounts()).pairs.get("E:Q")).toBe(2);
+    expect((await voteCounts()).cells.get("E:Q|WHICH_FIRST|Q")).toBe(1);
   });
 
   it("lists the cells a session has already answered", async () => {
@@ -133,7 +132,7 @@ describe("vote repository", () => {
 
     expect(await prisma.session.count()).toBe(0);
     expect(await prisma.vote.count()).toBe(1);
-    expect((await pairVoteCounts()).get("E:Q")).toBe(1);
+    expect((await voteCounts()).pairs.get("E:Q")).toBe(1);
     expect(await allObservations()).toHaveLength(1);
   });
 

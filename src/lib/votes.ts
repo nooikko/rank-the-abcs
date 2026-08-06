@@ -17,48 +17,63 @@ export type RecordVoteInput = {
   winner: Letter;
 };
 
-/** Postgres unique-violation. A duplicate is expected, not exceptional. */
+/** A duplicate vote and a missing session are both expected, not exceptional. */
 const UNIQUE_VIOLATION = "P2002";
+const FOREIGN_KEY_VIOLATION = "P2003";
 
-function isUniqueViolation(error: unknown): boolean {
+function hasCode(error: unknown, code: string): boolean {
   return (
     typeof error === "object" &&
     error !== null &&
     "code" in error &&
-    (error as { code?: unknown }).code === UNIQUE_VIOLATION
+    (error as { code?: unknown }).code === code
   );
 }
 
-/** Returns false when this session already ruled on this cell. */
-export async function recordVote(input: RecordVoteInput): Promise<boolean> {
+export type RecordVoteResult = "stored" | "duplicate" | "no-session";
+
+/**
+ * The session row is not checked or created first. Almost every vote comes from
+ * a session that already exists, so an upsert beforehand was a guaranteed round
+ * trip to learn something the insert itself will tell us.
+ */
+export async function recordVote(
+  input: RecordVoteInput,
+): Promise<RecordVoteResult> {
   try {
     await prisma.vote.create({ data: input });
-    return true;
+    return "stored";
   } catch (error) {
-    if (isUniqueViolation(error)) return false;
+    if (hasCode(error, UNIQUE_VIOLATION)) return "duplicate";
+    if (hasCode(error, FOREIGN_KEY_VIOLATION)) return "no-session";
     throw error;
   }
 }
 
-export async function pairVoteCounts(): Promise<Map<string, number>> {
-  const rows = await prisma.vote.groupBy({
-    by: ["pairKey"],
-    _count: { _all: true },
-  });
-  return new Map(rows.map((row) => [row.pairKey, row._count._all]));
-}
+export type VoteCounts = {
+  pairs: Map<string, number>;
+  cells: Map<string, number>;
+};
 
-export async function cellVoteCounts(): Promise<Map<string, number>> {
+/**
+ * Both count maps from one aggregation. Pair totals are the cell totals summed,
+ * so asking the database for them separately was a second full scan and a
+ * second network round trip for a number already in hand.
+ */
+export async function voteCounts(): Promise<VoteCounts> {
   const rows = await prisma.vote.groupBy({
     by: ["pairKey", "template", "firstShown"],
     _count: { _all: true },
   });
-  return new Map(
-    rows.map((row) => [
-      cellKey(row.pairKey, row.template, row.firstShown as Letter),
-      row._count._all,
-    ]),
-  );
+
+  const pairs = new Map<string, number>();
+  const cells = new Map<string, number>();
+  for (const row of rows) {
+    const n = row._count._all;
+    cells.set(cellKey(row.pairKey, row.template, row.firstShown as Letter), n);
+    pairs.set(row.pairKey, (pairs.get(row.pairKey) ?? 0) + n);
+  }
+  return { pairs, cells };
 }
 
 export async function answeredCellKeys(

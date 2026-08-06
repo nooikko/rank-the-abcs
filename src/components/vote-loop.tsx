@@ -1,21 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useState, useTransition } from "react";
+import { use, useCallback, useEffect, useState, useTransition } from "react";
 import { submitVote } from "@/app/actions";
 import { QuestionCard } from "@/components/question-card";
 import { RevealLedger } from "@/components/reveal-ledger";
-import { SettledMeter } from "@/components/settled-meter";
-import { SiteFooter } from "@/components/site-footer";
 import type { ServedQuestion, SplitRow } from "@/lib/question-service";
 
 export function VoteLoop({
   initial,
-  settledness,
 }: {
-  initial: ServedQuestion | null;
-  settledness: number;
+  initial: Promise<ServedQuestion | null>;
 }) {
-  const [question, setQuestion] = useState(initial);
+  const [question, setQuestion] = useState(use(initial));
   const [nextQuestion, setNextQuestion] = useState<ServedQuestion | null>(null);
   const [split, setSplit] = useState<SplitRow[] | null>(null);
   // The raw answer, which is what highlights a cell — for a yes/no question it
@@ -74,54 +70,47 @@ export function VoteLoop({
   }, [question, split, answer, advance]);
 
   return (
-    <>
-      {/* Takes every pixel the page has left over, so the cells inside can
-          stretch into it rather than leaving a void underneath. */}
-      <div className="flex flex-1 flex-col pt-s4">
-        {question ? (
-          <>
-            <QuestionCard
-              prompt={question.prompt}
-              options={question.options}
-              chosen={chosen}
-              disabled={pending || split !== null}
-              onAnswer={answer}
-            />
-            {/* Reserved whether or not a reveal is showing, so answering does
+    // Takes every pixel the page has left over, so the cells inside can
+    // stretch into it rather than leaving a void underneath.
+    <div className="flex flex-1 flex-col pt-s4">
+      {question ? (
+        <>
+          <QuestionCard
+            prompt={question.prompt}
+            options={question.options}
+            chosen={chosen}
+            disabled={pending || split !== null}
+            onAnswer={answer}
+          />
+          {/* Reserved whether or not a reveal is showing, so answering does
                 not resize the cells above it. */}
-            <div className="min-h-40 sm:min-h-42">
-              {split && (
-                <>
-                  <RevealLedger split={split} chosen={winner} />
-                  <button
-                    type="button"
-                    onClick={advance}
-                    className="group relative mt-s2 inline-flex min-h-11 items-center font-mono text-meta uppercase tracking-caps"
-                  >
-                    Next ruling &rarr;
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 bottom-3 h-px origin-left scale-x-0 bg-signal transition-transform duration-(--duration-hairline) ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
-                    />
-                  </button>
-                </>
-              )}
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-1 items-center">
-            <p className="max-w-lead text-pretty text-lead">
-              You have ruled on every question there is. That is genuinely all
-              of them. Go and look at what you did to the alphabet.
-            </p>
+          <div className="min-h-40 sm:min-h-42">
+            {split && (
+              <>
+                <RevealLedger split={split} chosen={winner} />
+                <button
+                  type="button"
+                  onClick={advance}
+                  className="group relative mt-s2 inline-flex min-h-11 items-center font-mono text-meta uppercase tracking-caps"
+                >
+                  Next ruling &rarr;
+                  <span
+                    aria-hidden="true"
+                    className="pointer-events-none absolute inset-x-0 bottom-3 h-px origin-left scale-x-0 bg-signal transition-transform duration-(--duration-hairline) ease-rise group-hover:scale-x-100 group-focus-visible:scale-x-100"
+                  />
+                </button>
+              </>
+            )}
           </div>
-        )}
-      </div>
-
-      <div>
-        <SettledMeter settledness={settledness} />
-        <SiteFooter current="vote" />
-      </div>
-    </>
+        </>
+      ) : (
+        <div className="flex flex-1 items-center">
+          <p className="max-w-lead text-pretty text-lead">
+            You have ruled on every question there is. That is genuinely all of
+            them. Go and look at what you did to the alphabet.
+          </p>
+        </div>
+      )}
+    </div>
   );
 }

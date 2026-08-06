@@ -3,8 +3,12 @@
  * A raw count reads as sad at realistic volumes and gives nobody a collective
  * goal; remaining uncertainty is a target everyone is pushing at together.
  */
-export function SettledMeter({ settledness }: { settledness: number }) {
-  const percent = Math.round(settledness * 100);
+export async function SettledMeter({
+  settledness,
+}: {
+  settledness: Promise<number>;
+}) {
+  const percent = Math.round((await settledness) * 100);
 
   return (
     <div className="mb-s3 border-border border-t pt-s3">

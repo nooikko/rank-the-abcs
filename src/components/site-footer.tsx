@@ -14,7 +14,9 @@ const Dot = () => (
 export function SiteFooter({
   current,
 }: {
-  current: "home" | "vote" | "rankings" | "privacy";
+  // "none" is for pages that are not one of the destinations — the 404 — where
+  // every link is worth offering because none of them is where you already are.
+  current: "home" | "vote" | "rankings" | "privacy" | "none";
 }) {
   return (
     <footer className="flex flex-wrap items-center gap-x-s2 font-mono text-meta uppercase tracking-caps text-muted-foreground">

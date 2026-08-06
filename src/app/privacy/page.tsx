@@ -1,8 +1,7 @@
-import type { Metadata } from "next";
 import { ForgetMe } from "@/components/forget-me";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteShell } from "@/components/site-shell";
-import { SITE_NAME } from "@/lib/site";
+import { pageMetadata } from "@/lib/metadata";
 
 /**
  * Hardcoded, not `new Date()`. This tracks the last time the *policy* changed;
@@ -11,12 +10,12 @@ import { SITE_NAME } from "@/lib/site";
  */
 const LAST_UPDATED = "5 August 2026";
 
-export const metadata: Metadata = {
-  title: `Privacy — ${SITE_NAME}`,
+export const metadata = pageMetadata({
+  title: "Privacy",
   description:
     "One cookie, doing one job: making sure you are not asked the same question twice. Nothing is sold, shared, or used to identify you.",
-  alternates: { canonical: "/privacy" },
-};
+  path: "/privacy",
+});
 
 export default function Privacy() {
   return (
