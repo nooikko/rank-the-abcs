@@ -8,9 +8,12 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-geist-sans);
-  --font-heading: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* The site is set in a serif. `sans` and `heading` are aliased to it so
+     shadcn primitives that reach for those tokens inherit the brand face. */
+  --font-serif: var(--font-newsreader);
+  --font-sans: var(--font-newsreader);
+  --font-heading: var(--font-newsreader);
+  --font-mono: var(--font-plex-mono);
 
   /* Signal orange: hairlines, markers, focus. Never a text colour — see
      --signal in :root for why. */
@@ -55,8 +58,78 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* Editorial scale. Kept in a non-inline @theme so the variables are emitted
+   to :root and can be referenced from custom utilities below. */
+@theme {
+  /* ---- type ----
+     Fluid, clamped, and paired with the line height each size is designed for,
+     so `text-title` carries its own leading rather than needing `leading-*`. */
+  --text-meta: 0.75rem;
+  --text-meta--line-height: 1.55;
+  --text-meta--letter-spacing: 0.08em;
+
+  --text-micro: 0.6875rem;
+  --text-micro--line-height: 1.7;
+
+  --text-code: 0.75rem;
+  --text-code--line-height: 1.75;
+
+  --text-body: clamp(1.0625rem, 1rem + 0.35vw, 1.1875rem);
+  --text-body--line-height: 1.62;
+
+  --text-lead: clamp(1.1875rem, 1.05rem + 0.7vw, 1.375rem);
+  --text-lead--line-height: 1.5;
+
+  --text-title: clamp(1.375rem, 1.15rem + 1.1vw, 1.875rem);
+  --text-title--line-height: 1.18;
+  --text-title--letter-spacing: -0.021em;
+
+  --text-name: clamp(2.25rem, 1.6rem + 3.2vw, 4rem);
+  --text-name--line-height: 1.02;
+  --text-name--letter-spacing: -0.032em;
+
+  /* ---- weight ----
+     Newsreader is a variable font, so these are real axis positions rather
+     than the nearest static cut. */
+  --font-weight-book: 380;
+  --font-weight-title: 420;
+  --font-weight-name: 350;
+
+  /* ---- tracking ---- */
+  --tracking-caps: 0.08em;
+  --tracking-eyebrow: 0.11em;
+
+  /* ---- space ----
+     A ~1.6 modular scale (8·13·21·34·55·88px), not Tailwind's linear one.
+     `section` and `gutter` are fluid because the page is a single column. */
+  --spacing-s1: 0.5rem;
+  --spacing-s2: 0.8125rem;
+  --spacing-s3: 1.3125rem;
+  --spacing-s4: 2.125rem;
+  --spacing-s5: 3.4375rem;
+  --spacing-s6: 5.5rem;
+  --spacing-section: clamp(4rem, 11vw, 8.5rem);
+  --spacing-gutter: clamp(1.25rem, 6vw, 3rem);
+  --spacing-shell-top: clamp(3.5rem, 12vw, 7rem);
+
+  /* ---- measure ---- */
+  --container-measure: 62ch;
+  --container-lead: 46ch;
+  --container-summary: 52ch;
+  --container-caption: 54ch;
+  --container-shell: calc(62ch + 8vw);
+
+  /* ---- motion ----
+     Durations live in :root rather than here: `--duration-*` is not a Tailwind
+     theme namespace, so putting them in @theme would imply utilities that
+     don't exist. */
+  --ease-rise: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 :root {
   --radius: 0.625rem;
+  --duration-rise: 480ms;
+  --duration-hairline: 180ms;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -159,7 +232,11 @@
   }
 
   body {
-    @apply bg-background font-sans text-foreground antialiased;
+    @apply bg-background font-serif text-body font-book text-foreground antialiased;
+    font-optical-sizing: auto;
+    /* Safari-only, degrades silently: pulls quotes and hyphens into the margin
+       so the measure reads as a clean edge. */
+    hanging-punctuation: first last;
   }
 
   ::selection {
@@ -170,5 +247,39 @@
      high-contrast marker. */
   :focus-visible {
     @apply rounded-[1px] outline-2 outline-offset-[3px] outline-signal;
+  }
+}
+
+/* The one animation on the page, shared by the load-in and the scroll-in. Kept
+   at top level rather than in @theme so it is emitted even though the
+   utilities below reference the keyframes by name. */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Entrance on load. Pair with an arbitrary [animation-delay:*] to stagger. */
+@utility rise-on-load {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: rise var(--duration-rise) var(--ease-rise) both;
+  }
+}
+
+/* Scroll-driven entrance. Runs off the compositor with no scroll listener, and
+   is inert both under reduced-motion and in browsers without view timelines —
+   in which case the element simply renders in its final state. */
+@utility rise-in-view {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: rise var(--duration-rise) var(--ease-rise) both;
+      animation-timeline: view();
+      animation-range: entry 5% entry 55%;
+    }
   }
 }

@@ -42,3 +42,4 @@ next-env.d.ts
 
 # agent tooling — per-machine permission grants, not shared config
 .claude/settings.local.json
+.superpowers/

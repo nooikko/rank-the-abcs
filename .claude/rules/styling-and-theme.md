@@ -54,14 +54,30 @@ Dark mode is class-based (`@custom-variant dark (&:is(.dark *))`) and is a real,
 user-togglable mode on this project — not a defined-but-unused set of values.
 Both grounds must be checked when adding anything.
 
-## Type and spacing
+## The editorial scale
 
-Stock Tailwind: `text-sm`, `text-3xl`, `p-4`, `gap-6`. There is no bespoke
-editorial scale. If the design grows one, declare it in the non-inline `@theme`
-block rather than scattering `clamp()` calls through components.
+Sizes carry their own leading and tracking, so `text-title` needs no
+`leading-*` beside it. Don't reintroduce raw `text-lg`/`text-2xl` for page
+content:
 
-Fonts are Geist and Geist Mono, loaded in `layout.tsx` via `next/font/google`
-and wired to `--font-sans` / `--font-mono`.
+- **Type** — `text-name`, `text-title`, `text-lead`, `text-body`, `text-meta`
+  (uppercase labels), `text-code`, `text-micro`. The first four are fluid
+  `clamp()`s and need no responsive variants.
+- **Weight** — `font-name` (350), `font-book` (380), `font-title` (420). Real
+  variable-font axis positions, not the nearest static cut.
+- **Tracking** — `tracking-caps`, `tracking-eyebrow`.
+- **Space** — `s1`…`s6`, a ~1.6 modular scale (8·13·21·34·55·88px), plus fluid
+  `section`, `gutter`, and `shell-top`. Use `mb-s4`, not `mb-8`.
+- **Measure** — `max-w-measure` (62ch), `max-w-lead`, `max-w-summary`,
+  `max-w-caption`, `max-w-shell`.
+- **Motion** — `ease-rise`, plus the `rise-on-load` and `rise-in-view`
+  utilities. `rise-in-view` is scroll-driven via `animation-timeline: view()`,
+  so it costs no scroll listener and is inert under `prefers-reduced-motion`.
+
+Fonts are Newsreader (variable, with the `opsz` axis requested so
+`font-optical-sizing` has something to act on) and IBM Plex Mono, loaded in
+`layout.tsx` via `next/font/google`. Body copy is the serif; mono is for meta
+lines, labels, and figures.
 
 ## Use tokens, not raw colours
 

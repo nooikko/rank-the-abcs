@@ -208,11 +208,13 @@ The vote screen reveals results only after a vote is cast — every visitor
 contributes before they consume. On submit, the reveal shows how many people
 agreed with that choice.
 
-**Per-vote feedback tells the truth, including when the truth is boring.** Most
-votes will not change the order, and "you agreed with the crowd; the estimate
-got tighter" is an acceptable message. Reporting movement that did not happen
-would make the site a participation trophy, and this is meant to outlive its
-launch week.
+The reveal reports the vote split only — each answer's share and raw count,
+with the visitor's own choice marked. **It does not report movement in the
+alphabet.** Showing "your vote moved T from 19th to 17th" would make individual
+votes feel consequential in exactly the way that pushes toward a volatile,
+drama-seeking system, and the honest version of that message is "no change"
+most of the time anyway. Movement belongs on the rankings page, at the scale
+where it means something.
 
 Progress is expressed as *how settled the alphabet is* — remaining uncertainty —
 rather than as a raw vote count, which reads as sad at realistic volumes and
@@ -232,14 +234,58 @@ coefficients. Publicly readable without voting.
 is sold or shared, and the forget-me control. Required, since the
 strictly-necessary exemption removes the banner but not the notice.
 
-Visual design is deliberately not specified here. It is a separate pass.
+### Vote screen layout
+
+The question leads the page as full prose in the serif display size. Beneath
+it, the two answers sit as ruled cells side by side — no eyebrow, no site
+header above the question.
+
+The same structure carries all three templates. `WHICH_FIRST` puts a letter in
+each cell; the two yes/no templates put "Yes" and "No" there. Nothing about the
+layout changes between them, which is why this shape was chosen over a
+letters-as-hero treatment that only flatters one of the three.
+
+Each cell carries a keyboard hint (`press 1`, `press 2`). At the volumes this
+is built for, mouse-only voting gets tiring quickly.
+
+**Selected state is a one-pixel orange inset border on the chosen cell.** The
+focus ring is also orange but sits outside the cell at a 3px offset, so the two
+read as different objects; keep that separation, since they mean different
+things and a keyboard user sees both at once.
+
+### The reveal
+
+On answering, the crowd's split appears in place — the screen is not replaced
+and the cells do not move. A mono ledger beneath the row gives each answer's
+share and raw count, with the visitor's own choice marked by an orange caret.
+
+Advance is explicit rather than automatic: a "Next ruling" control with the
+hairline wipe. Auto-advancing would steal the reveal from anyone reading
+slowly, and would catch a mistimed click on the following question.
+
+### Rankings layout
+
+A row per letter: position, the letter, its confidence interval drawn as a
+neutral grey band with an orange tick at the estimate, and the score. Two
+letters whose bands overlap are not genuinely separated, and the page says so.
+
+The band is the point. It is the one view where the model's actual claim —
+including how unsure it is — is visible rather than implied by ordering.
+
+Visual polish beyond this is left to implementation.
 
 ## Theme
 
 White, black, and orange. Orange is the only chromatic colour, held at two
 lightnesses so one value does not have to be both safe body text and a bright
-marker. Full detail lives in `.claude/rules/styling-and-theme.md`; the tokens
-are already in `src/app/globals.css` for both grounds.
+marker. **Orange is never a background fill** — it is hairlines, borders,
+markers, and focus rings only.
+
+The design language is carried over from findquinn.com: Newsreader for body and
+display, IBM Plex Mono for meta lines and figures, a fluid editorial type scale,
+a ~1.6 modular spacing scale, and a 62ch measure inside a single column. Full
+detail lives in `.claude/rules/styling-and-theme.md`; the tokens are in
+`src/app/globals.css` for both grounds.
 
 Dark mode is a real user-togglable mode, not a defined-but-unused set of
 values. That needs `next-themes` — the class-based `.dark` variant is already
