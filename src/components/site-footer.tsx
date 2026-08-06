@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const LINK =
   "inline-flex min-h-11 items-center underline underline-offset-4 transition-colors hover:text-foreground";
@@ -30,6 +31,10 @@ export function SiteFooter({
           </Link>
         </>
       )}
+      <span aria-hidden="true" className="text-border">
+        &middot;
+      </span>
+      <ThemeToggle />
     </footer>
   );
 }

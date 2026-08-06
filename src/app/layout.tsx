@@ -1,6 +1,7 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Newsreader } from "next/font/google";
+import { ThemeProvider } from "@/components/theme-provider";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
@@ -49,10 +50,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      // next-themes writes the class before paint, which React would otherwise
+      // report as a server/client mismatch.
+      suppressHydrationWarning
       className={`${newsreader.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
         {/*
           The `/next` entry point, not the bare package: it reads the App Router
           pathname so a client-side navigation registers as a page view, and it
