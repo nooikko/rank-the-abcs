@@ -54,6 +54,11 @@ export default function RootLayout({
       // next-themes writes the class before paint, which React would otherwise
       // report as a server/client mismatch.
       suppressHydrationWarning
+      // globals.css sets `scroll-behavior: smooth` for in-page movement. Next
+      // 16 stopped overriding that during route transitions unless this
+      // attribute is present, and without it a navigation would animate its
+      // way to the top of the new page instead of arriving there.
+      data-scroll-behavior="smooth"
       className={`${newsreader.variable} ${plexMono.variable} h-full`}
     >
       <body className="flex min-h-full flex-col">
