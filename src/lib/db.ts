@@ -9,13 +9,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 /**
- * Opening a connection to the hosted database costs roughly 250ms — TLS plus
- * the Postgres handshake — against about 45ms for a query on a connection that
- * already exists. That made `Promise.all` a trap: two queries fired together on
- * a single-connection pool spent a quarter of a second opening the second one,
- * and ran slower than the same two queries in sequence.
- *
- * Measured on the vote path: 305ms cold against 47ms warm.
+ * A query on an existing connection costs about 45ms; opening a new one costs
+ * about 250ms. Parallel queries are therefore only quick once the pool has
+ * connections to hand them — fired at a cold pool, they are slower than the
+ * same queries run in sequence.
  */
 const POOL_SIZE = 5;
 const WARM_CONNECTIONS = 3;
@@ -41,10 +38,8 @@ export const prisma = globalForPrisma.prisma ?? createClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 
 /**
- * Opens several connections up front so the first visitor does not pay for
- * them. Fire-and-forget, and deliberately swallowing failures: this also runs
- * when the module is imported during a build, where the database may be
- * unreachable and where nothing needs it anyway.
+ * Failures are swallowed because this also runs when the module is imported
+ * during a build, where the database may be unreachable and nothing needs it.
  */
 export function warmPool(): Promise<void> {
   globalForPrisma.prismaWarm ??= Promise.all(

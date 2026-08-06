@@ -1,15 +1,19 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteShell } from "@/components/site-shell";
-import { getRanking } from "@/lib/ranking-cache";
+import { VoteTally, VoteTallySkeleton } from "@/components/vote-tally";
+import { pageMetadata } from "@/lib/metadata";
 
-// The settled figure comes from the vote table, which moves constantly.
+// The tally comes from the vote table, which moves constantly.
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
-  const ranking = await getRanking();
-  const settled = Math.round(ranking.settledness * 100);
+// No title or description: the site's own are already this page's, and the
+// layout supplies both. The path is what this adds, so the canonical and the
+// og:url name this page rather than whichever origin served it.
+export const metadata = pageMetadata({ path: "/" });
 
+export default function Home() {
   return (
     <SiteShell>
       <p className="mb-s3 font-mono text-meta uppercase tracking-eyebrow text-muted-foreground rise-on-load [animation-delay:40ms]">
@@ -46,11 +50,11 @@ export default async function Home() {
         </Link>
       </p>
 
-      <p className="mb-s6 font-mono text-meta uppercase tracking-caps text-muted-foreground">
-        {ranking.observations === 0
-          ? "No rulings yet. Yours would be the first."
-          : `${ranking.observations.toLocaleString("en-US")} rulings so far · the alphabet is ${settled}% settled`}
-      </p>
+      <div className="mb-s6">
+        <Suspense fallback={<VoteTallySkeleton />}>
+          <VoteTally />
+        </Suspense>
+      </div>
 
       <SiteFooter current="home" />
     </SiteShell>
