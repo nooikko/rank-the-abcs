@@ -298,6 +298,70 @@ The theme preference is stored in `localStorage`, not a cookie. It never
 reaches the server, is not an identifier, and does not change the consent
 analysis above.
 
+## Architecture
+
+Server-first. There is **no public REST API for voting** — no route handler
+accepting a JSON body that anyone can discover and script against.
+
+- Pages are Server Components. The vote page draws a question server-side,
+  mints a signed token for it, and renders it.
+- Voting goes through a **Server Action**, which is POST-only, carries Next's
+  origin checks, and is not a documented endpoint.
+- The action records the vote and returns the reveal *and* the next question
+  with its token, so the loop never round-trips through a page navigation.
+- Client code is confined to the interaction leaf: the two cells and their
+  keyboard handling. Everything else — selection, verification, the fit —
+  stays on the server.
+
+Server Actions are not themselves a security boundary; action ids are
+discoverable by anyone reading the page bundle. They raise the cost of casual
+scripting, and the signed token below does the actual work.
+
+### Signed question tokens
+
+**You cannot vote on a question the server did not ask you.**
+
+When a question is served, the server issues an HMAC-signed token binding the
+pair, the template, which letter was shown first, the session id, and an
+issue timestamp. The vote must carry that token back.
+
+Verification rejects the vote unless:
+
+- the signature is valid, so the question cannot be invented client-side;
+- the token has not expired — a short TTL, minutes not hours;
+- the session in the token matches the session in the cookie;
+- the answer is one the template actually permits.
+
+The consequence is that the ballot cannot be enumerated. An attacker cannot
+iterate the question cells and post a vote into each one, because each vote
+requires a token the server only mints when it decides — by coverage-weighted
+draw — to ask that question. The server sets both the pace and the content of
+what is votable.
+
+**Replay is already covered by the vote table.** Re-submitting a token means
+re-submitting a vote for a cell the session has answered, which the unique
+constraint rejects. No separate nonce store is needed.
+
+A **minimum answer time** is also enforced: a token minted a few hundred
+milliseconds ago and returned already was not read by a person. This is cheap
+and catches naive automation.
+
+Rate limiting by IP and by session sits on top.
+
+### What this does not stop
+
+A headless browser that requests questions and answers them at a human-ish pace
+is, at the protocol level, indistinguishable from an enthusiastic visitor.
+Nothing short of a CAPTCHA changes that, and a CAPTCHA in front of a joke about
+the letter Q costs more than the votes it would protect. Rate limiting bounds
+the damage; the rest is accepted.
+
+### Configuration
+
+The token secret is an environment variable alongside the database credentials.
+Rotating it invalidates outstanding tokens, which costs a visitor one
+re-served question and nothing else.
+
 ## Data model
 
 Votes are the single source of truth. Vote counts used by the selector are
@@ -348,6 +412,9 @@ Database is Prisma Postgres, already provisioned; credentials are in `.env`.
 
 - **Duplicate vote** — the unique constraint rejects it; treat as idempotent
   and serve the next question.
+- **Invalid, expired, or replayed token** — serve a fresh question rather than
+  an error. A visitor who left a tab open overnight is the common case; an
+  attacker learns nothing from the response either way.
 - **Disconnected graph** — report unplaced letters explicitly, never fabricate
   a position.
 - **No votes yet** — the rankings page shows an explicit empty state, not the
@@ -372,6 +439,11 @@ testable against synthetic data with known ground truth:
 
 The selector is tested statistically: low-count cells are drawn more often, no
 cell starves, and concurrent draws scatter.
+
+Token verification is tested adversarially: a forged signature, a token past
+its TTL, a token minted for a different session, an answer the template does
+not permit, a replayed token, and an answer returned implausibly fast are each
+rejected — and each rejection serves a fresh question rather than leaking why.
 
 Forget-me is tested end to end: the session row is gone, its votes survive with
 a null `sessionId`, the alphabet is unchanged by the operation, and the cookie
