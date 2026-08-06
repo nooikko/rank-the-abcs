@@ -1,0 +1,43 @@
+name: New question phrasing
+description: Propose another way of asking which letter comes first.
+labels: ["phrasing"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Phrasings are instrumentation, not variety. Each one is recorded so its
+        distorting effect on answers can be measured and removed. A good
+        proposal is a genuinely different *framing* — one a person could
+        plausibly answer differently without changing their actual opinion.
+
+        Rewording an existing template is not a new phrasing.
+
+  - type: input
+    id: prompt
+    attributes:
+      label: The prompt
+      description: Write it with `{a}` and `{b}` where the letters go.
+      placeholder: Does {a} belong ahead of {b}?
+    validations:
+      required: true
+
+  - type: textarea
+    id: mapping
+    attributes:
+      label: How does each answer map to a winner?
+      description: Every permitted answer must resolve to exactly one letter.
+      placeholder: |
+        Yes → {a} comes first
+        No  → {b} comes first
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: What distortion would this let us measure?
+      description: >
+        What is psychologically different about it? Existing templates already
+        cover position bias, acquiescence bias, and negation drag.
+    validations:
+      required: true

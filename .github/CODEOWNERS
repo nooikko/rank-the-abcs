@@ -1,0 +1,17 @@
+# Last matching pattern wins (the opposite of .gitignore).
+
+*                        @nooikko
+
+# Called out explicitly so a change to the build, the update policy, the
+# licence, or this file itself always requires owner review, even if the
+# blanket rule above is ever narrowed.
+/.github/CODEOWNERS      @nooikko
+/.github/workflows/      @nooikko
+/.github/dependabot.yml  @nooikko
+/LICENSE                 @nooikko
+
+# The rules the design is protecting. Changing these is changing the product,
+# not the code.
+/src/lib/select-question.ts  @nooikko
+/src/lib/ranking.ts          @nooikko
+/src/lib/question-token.ts   @nooikko

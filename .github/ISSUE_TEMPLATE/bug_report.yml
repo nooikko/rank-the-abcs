@@ -1,0 +1,67 @@
+name: Bug report
+description: Something on the site is broken, wrong, or unreadable.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please don't report security issues here — use a
+        [security advisory](https://github.com/nooikko/rank-the-abcs/security/advisories/new)
+        instead.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you do, and what did the site do back?
+      placeholder: I pressed 1 to answer, and the same question came back.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect instead?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: page
+    attributes:
+      label: Which page?
+      options:
+        - Home
+        - Voting
+        - The alphabet so far
+        - Privacy
+        - More than one / not sure
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Firefox 140 on macOS / Safari on iPhone 15
+    validations:
+      required: true
+
+  - type: dropdown
+    id: theme
+    attributes:
+      label: Light or dark mode?
+      options:
+        - Light
+        - Dark
+        - Both
+        - Not sure / not relevant
+    validations:
+      required: false
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else
+      description: Screenshots and console errors are welcome.
+    validations:
+      required: false

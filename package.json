@@ -7,10 +7,12 @@
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
-    "lint": "biome check",
-    "format": "biome format --write",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
+    "format": "biome format --write",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",

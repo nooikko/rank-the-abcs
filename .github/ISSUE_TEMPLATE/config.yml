@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/nooikko/rank-the-abcs/security/advisories/new
+    about: Report privately through a security advisory, never a public issue.
+  - name: Argue about the alphabet
+    url: https://github.com/nooikko/rank-the-abcs/discussions
+    about: Opinions about where Q belongs go here, or into the site itself.
