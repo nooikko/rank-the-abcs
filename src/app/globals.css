@@ -88,6 +88,13 @@
   --text-name--line-height: 1.02;
   --text-name--letter-spacing: -0.032em;
 
+  /* The two answer cells on the vote screen. Larger than --text-name because
+     a single letter has no width to carry presence with, and the cells are
+     the thing the whole page exists to make you press. */
+  --text-duel: clamp(3.25rem, 1.5rem + 8vw, 7rem);
+  --text-duel--line-height: 1;
+  --text-duel--letter-spacing: -0.03em;
+
   /* ---- weight ----
      Newsreader is a variable font, so these are real axis positions rather
      than the nearest static cut. */

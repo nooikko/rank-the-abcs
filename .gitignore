@@ -46,3 +46,4 @@ next-env.d.ts
 
 # prisma client — generated from prisma/schema.prisma on install
 /src/generated
+.playwright-mcp/

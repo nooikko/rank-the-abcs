@@ -50,9 +50,15 @@ export function mintQuestionToken(
   return `${body}.${sign(body, secret)}`;
 }
 
+/**
+ * `sessionId` is the session the *cookie* claims, or null when the visitor has
+ * none yet. A null session adopts the id sealed into the token: that id was
+ * minted by the server during the render and is covered by the signature, so
+ * adopting it is not trusting the client with anything.
+ */
 export function verifyQuestionToken(
   token: string,
-  sessionId: string,
+  sessionId: string | null,
   opts: { secret?: string; now?: number } = {},
 ): VerifyResult {
   const secret = secretOrThrow(opts.secret);
@@ -83,7 +89,7 @@ export function verifyQuestionToken(
   const age = now - payload.issuedAt;
   if (age > TOKEN_TTL_MS) return { ok: false, reason: "expired" };
   if (age < MIN_ANSWER_MS) return { ok: false, reason: "too-fast" };
-  if (payload.sessionId !== sessionId) {
+  if (sessionId !== null && payload.sessionId !== sessionId) {
     return { ok: false, reason: "session-mismatch" };
   }
 

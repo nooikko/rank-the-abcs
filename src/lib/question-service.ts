@@ -10,6 +10,7 @@ import {
 import { mintQuestionToken, verifyQuestionToken } from "./question-token";
 import { invalidateRanking } from "./ranking-cache";
 import { selectQuestion } from "./select-question";
+import { newPendingSessionId } from "./session";
 import {
   answeredCellKeys,
   cellVoteCounts,
@@ -40,6 +41,12 @@ export type VoteResult = {
   split: SplitRow[] | null;
   chosen: Letter | null;
   next: ServedQuestion | null;
+  /**
+   * The session this vote resolved to — the cookie's, or the one adopted from
+   * the token on a first vote. The caller sets the cookie; this module cannot,
+   * because only a Server Action may write one.
+   */
+  sessionId: string | null;
 };
 
 /** A session answering faster than this over a minute is not reading. */
@@ -94,33 +101,44 @@ async function splitFor(pair: string): Promise<SplitRow[]> {
  * nothing from the response either way.
  */
 export async function applyVote(
-  sessionId: string,
+  cookieSessionId: string | null,
   token: string,
   answer: string,
+  persistSession: (id: string) => Promise<void>,
 ): Promise<VoteResult> {
-  const rejected = async (): Promise<VoteResult> => ({
+  // A rejected vote still needs a question to show next, and the visitor may
+  // not have a session yet, so fall back to a fresh pending id.
+  const rejected = async (fallback: string): Promise<VoteResult> => ({
     accepted: false,
     split: null,
     chosen: null,
-    next: await serveQuestion(sessionId),
+    next: await serveQuestion(fallback),
+    sessionId: cookieSessionId,
   });
 
-  if ((await recentVoteCount(sessionId, RATE_WINDOW_MS)) >= RATE_LIMIT) {
-    return rejected();
+  const verified = verifyQuestionToken(token, cookieSessionId);
+  if (!verified.ok) {
+    return rejected(cookieSessionId ?? newPendingSessionId());
   }
 
-  const verified = verifyQuestionToken(token, sessionId);
-  if (!verified.ok) return rejected();
+  const { pairKey, template, firstShown, sessionId } = verified.payload;
 
-  const { pairKey, template, firstShown } = verified.payload;
+  if ((await recentVoteCount(sessionId, RATE_WINDOW_MS)) >= RATE_LIMIT) {
+    return rejected(sessionId);
+  }
+
   const second = otherLetter(pairKey, firstShown);
 
   let winner: Letter;
   try {
     winner = interpretAnswer(template, firstShown, second, answer);
   } catch {
-    return rejected();
+    return rejected(sessionId);
   }
+
+  // The row is created here rather than at render time, so a visitor who never
+  // votes leaves no trace at all.
+  await persistSession(sessionId);
 
   const stored = await recordVote({
     sessionId,
@@ -130,7 +148,7 @@ export async function applyVote(
     answer,
     winner,
   });
-  if (!stored) return rejected();
+  if (!stored) return rejected(sessionId);
 
   invalidateRanking();
 
@@ -139,5 +157,6 @@ export async function applyVote(
     split: await splitFor(pairKey),
     chosen: winner,
     next: await serveQuestion(sessionId),
+    sessionId,
   };
 }

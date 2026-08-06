@@ -6,6 +6,7 @@ import {
   serveQuestion,
 } from "./question-service";
 import { MIN_ANSWER_MS, mintQuestionToken } from "./question-token";
+import { newPendingSessionId, persistSession } from "./session";
 
 async function freshSession(): Promise<string> {
   return (await prisma.session.create({ data: {} })).id;
@@ -49,6 +50,7 @@ describe("question service", () => {
       sessionId,
       agedToken(sessionId, question),
       question.options[0].value,
+      persistSession,
     );
 
     expect(result.accepted).toBe(true);
@@ -65,6 +67,7 @@ describe("question service", () => {
       sessionId,
       "forged.token",
       question.options[0].value,
+      persistSession,
     );
 
     expect(result.accepted).toBe(false);
@@ -80,6 +83,7 @@ describe("question service", () => {
       sessionId,
       agedToken(sessionId, question),
       "NONSENSE",
+      persistSession,
     );
 
     expect(result.accepted).toBe(false);
@@ -91,11 +95,57 @@ describe("question service", () => {
     const question = required(await serveQuestion(sessionId));
     const token = agedToken(sessionId, question);
 
-    await applyVote(sessionId, token, question.options[0].value);
-    const replay = await applyVote(sessionId, token, question.options[0].value);
+    await applyVote(
+      sessionId,
+      token,
+      question.options[0].value,
+      persistSession,
+    );
+    const replay = await applyVote(
+      sessionId,
+      token,
+      question.options[0].value,
+      persistSession,
+    );
 
     expect(replay.accepted).toBe(false);
     expect(await prisma.vote.count()).toBe(1);
+  });
+
+  it("adopts the token's session on a first vote, creating no row before it", async () => {
+    const pending = newPendingSessionId();
+    const question = required(await serveQuestion(pending));
+
+    // Nothing exists yet: serving a question must not tag anyone.
+    expect(await prisma.session.count()).toBe(0);
+
+    const result = await applyVote(
+      null,
+      agedToken(pending, question),
+      question.options[0].value,
+      persistSession,
+    );
+
+    expect(result.accepted).toBe(true);
+    expect(result.sessionId).toBe(pending);
+    expect(await prisma.session.count()).toBe(1);
+    expect(await prisma.vote.count()).toBe(1);
+  });
+
+  it("refuses a token belonging to a different session than the cookie", async () => {
+    const mine = await freshSession();
+    const theirs = newPendingSessionId();
+    const question = required(await serveQuestion(theirs));
+
+    const result = await applyVote(
+      mine,
+      agedToken(theirs, question),
+      question.options[0].value,
+      persistSession,
+    );
+
+    expect(result.accepted).toBe(false);
+    expect(await prisma.vote.count()).toBe(0);
   });
 
   it("never serves a cell this session already answered", async () => {
@@ -107,6 +157,7 @@ describe("question service", () => {
         sessionId,
         agedToken(sessionId, question),
         question.options[0].value,
+        persistSession,
       );
     }
     const rows = await prisma.vote.findMany({

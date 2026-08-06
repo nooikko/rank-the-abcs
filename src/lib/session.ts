@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { prisma } from "./db";
 
@@ -10,27 +11,40 @@ export async function getSessionId(): Promise<string | null> {
 }
 
 /**
- * Creates the session row and cookie on demand. Called from the vote path
- * only — a visitor who reads the rankings and leaves is never tagged, which is
- * load-bearing for the strictly-necessary exemption the site relies on.
+ * An id for a visitor who has not voted yet. It is minted during the page
+ * render and sealed into the question token, but no row and no cookie exist
+ * until a vote actually arrives.
+ *
+ * Next only permits writing cookies from a Server Action or Route Handler, and
+ * that restriction happens to enforce exactly what the privacy notice
+ * promises: someone who reads and leaves is never tagged.
  */
-export async function ensureSessionId(): Promise<string> {
-  const existing = await getSessionId();
-  if (existing) {
-    const known = await prisma.session.findUnique({ where: { id: existing } });
-    if (known) return existing;
-  }
+export function newPendingSessionId(): string {
+  return randomUUID();
+}
 
-  const session = await prisma.session.create({ data: {} });
+/**
+ * Materialises the session the token was issued against. The id came from a
+ * signed token, so it is the server's own value rather than anything the
+ * client chose.
+ */
+export async function persistSession(id: string): Promise<void> {
+  await prisma.session.upsert({
+    where: { id },
+    update: {},
+    create: { id },
+  });
+}
+
+export async function setSessionCookie(id: string): Promise<void> {
   const store = await cookies();
-  store.set(SESSION_COOKIE, session.id, {
+  store.set(SESSION_COOKIE, id, {
     maxAge: SIX_MONTHS_SECONDS,
     path: "/",
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
   });
-  return session.id;
 }
 
 export async function clearSession(): Promise<void> {

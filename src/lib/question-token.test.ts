@@ -78,6 +78,20 @@ describe("question tokens", () => {
     });
   });
 
+  it("adopts the token's session when the visitor has none yet", () => {
+    const token = mintQuestionToken(payload, { secret: SECRET });
+    const result = verifyQuestionToken(token, null, readable);
+    expect(result).toEqual({ ok: true, payload });
+  });
+
+  it("still enforces the signature when adopting a session", () => {
+    const token = mintQuestionToken(payload, { secret: OTHER_SECRET });
+    expect(verifyQuestionToken(token, null, readable)).toEqual({
+      ok: false,
+      reason: "bad-signature",
+    });
+  });
+
   it("rejects structurally broken input without throwing", () => {
     for (const bad of ["", "nodot", "a.b.c", "!!!.???"]) {
       expect(verifyQuestionToken(bad, "session-1", readable).ok).toBe(false);
